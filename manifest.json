@@ -1,0 +1,13 @@
+{
+  "name": "Mini4WD Race Analyzer",
+  "short_name": "M4RA",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0f766e",
+  "description": "ミニ四駆の完走率と１位平均タイムを算出するPWA",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
+
