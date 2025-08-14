@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>タイム分布図 - Mini4WD Race Analyzer</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>タイム分布図</h1>
+      <div id="appVersion" class="version"></div>
+    </header>
+    <main class="container">
+      <section class="card">
+        <div class="group-detail-header">
+          <div class="group-title">
+            <h2 id="groupTitle">-</h2>
+            <div id="groupMeta" class="muted small"></div>
+          </div>
+          <div class="group-actions">
+            <button id="backBtn" class="accent small">← 戻る</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="stack" style="flex:1">
+            <span>サマリー（ビン幅 0.5秒）</span>
+            <div class="meta" id="summary">-</div>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <canvas id="histCanvas" width="900" height="360" style="width:100%; max-height:360px; background:#fff; border:1px solid var(--border); border-radius:10px"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>対象レース</h3>
+        <div id="raceList" class="list"></div>
+      </section>
+
+      <dialog id="binDialog">
+        <form method="dialog" class="race-form">
+          <header class="dialog-header">
+            <h3 id="binDialogTitle">該当レース</h3>
+            <button type="button" id="closeBinDialog" class="icon-btn" aria-label="閉じる">&#x2715;</button>
+          </header>
+          <div id="binDialogBody" style="padding:12px; max-height:50vh; overflow:auto"></div>
+          <footer class="dialog-footer">
+            <button type="submit" class="primary">閉じる</button>
+          </footer>
+        </form>
+      </dialog>
+    </main>
+
+    <script src="./version.js"></script>
+    <script src="./distribution.js"></script>
+  </body>
+  </html>

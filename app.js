@@ -168,16 +168,12 @@ function renderGroupDetail(gid) {
     stat('最低タイム(最遅)', worst == null ? '-' : formatTime(worst)),
   );
 
-  // Predict win probability
-  const expectedInput = $('#expectedTimeInput');
-  const winProbEl = $('#winProb');
-  if (typeof group.expectedMs === 'number') {
-    expectedInput.value = (group.expectedMs / 1000).toFixed(2);
-  } else {
-    expectedInput.value = '';
-  }
-  const p = computeWinProbability(firsts, group.expectedMs);
-  winProbEl.textContent = p == null ? '-' : `${(p * 100).toFixed(1)}%`;
+  // Expected time display based on target probability toggle
+  const expDisp = $('#expectedTimeDisplay');
+  const targetProb = typeof group.targetProb === 'number' ? group.targetProb : 0.8;
+  renderTargetProbBtns(targetProb);
+  const targetMs = computeTargetMs(firsts, targetProb);
+  if (expDisp) expDisp.textContent = (typeof targetMs === 'number') ? formatTime(targetMs) : '-';
 
   // Render best-time ranking (top 10)
   rankList.innerHTML = '';
@@ -199,11 +195,11 @@ function renderGroupDetail(gid) {
       const item = document.createElement('div');
       item.className = 'list-item';
       item.innerHTML = `
-        <div class="title">#${i + 1}</div>
-        <div style="display:flex; align-items:center; gap:12px">
+        <div>
+          <div class="title">#${i + 1}</div>
           <div class="meta">${new Date(e.when).toLocaleString()}</div>
-          <div class="meta"><strong>${formatTime(e.t)}</strong></div>
         </div>
+        <div class="time-large">${formatTime(e.t)}</div>
       `;
       rankList.appendChild(item);
     });
@@ -264,6 +260,38 @@ function computeWinProbability(firsts, expectedMs) {
   return wins / firsts.length;
 }
 
+function computeTargetMs(firsts, targetProb = 0.8) {
+  if (!Array.isArray(firsts) || firsts.length === 0) return null;
+  const a = firsts.slice().sort((x, y) => x - y);
+  const n = a.length;
+  const idx = Math.floor((1 - targetProb) * n);
+  const i = Math.max(0, Math.min(n - 1, idx));
+  return a[i];
+}
+
+function renderTargetProbBtns(current) {
+  const cont = document.getElementById('targetProbBtns');
+  if (!cont) return;
+  const options = [0.7, 0.8, 0.9];
+  cont.innerHTML = '';
+  options.forEach((p) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const active = Math.abs(p - current) < 1e-6;
+    btn.className = 'choice-btn' + (active ? ' active' : '');
+    btn.setAttribute('aria-pressed', String(active));
+    btn.textContent = `${Math.round(p * 100)}%`;
+    btn.addEventListener('click', () => {
+      if (!currentGroupId) return;
+      const g = state.groups[currentGroupId];
+      g.targetProb = p;
+      saveData(state);
+      renderGroupDetail(currentGroupId);
+    });
+    cont.appendChild(btn);
+  });
+}
+
 $('#groupCreateForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const name = $('#groupNameInput').value.trim();
@@ -290,6 +318,10 @@ $('#deleteGroupBtn').addEventListener('click', () => {
 });
 
 $('#newRaceBtn').addEventListener('click', () => openRaceDialog());
+document.getElementById('openDistBtn')?.addEventListener('click', () => {
+  if (!currentGroupId) return;
+  location.href = `./distribution.html?group=${encodeURIComponent(currentGroupId)}`;
+});
 
 // ---------- Race Dialog + Stopwatch ----------
 let sw = null;
@@ -307,7 +339,6 @@ function openRaceDialog() {
   sw = new Stopwatch((ms) => $('#timerDisplay').textContent = formatTime(ms));
   $('#startBtn').disabled = false;
   $('#stopBtn').disabled = true;
-  $('#resetBtn').disabled = true;
   capturedTime = null;
 
   dlg.showModal();
@@ -322,7 +353,6 @@ $('#startBtn').addEventListener('click', () => {
   sw?.start();
   $('#startBtn').disabled = true;
   $('#stopBtn').disabled = false;
-  $('#resetBtn').disabled = false;
   capturedTime = null;
   $('#recordedInfo').textContent = '';
   updateSaveEnabled();
@@ -337,12 +367,7 @@ $('#stopBtn').addEventListener('click', () => {
   updateSaveEnabled();
 });
 
-$('#resetBtn').addEventListener('click', () => {
-  sw?.reset();
-  capturedTime = null;
-  $('#recordedInfo').textContent = '';
-  updateSaveEnabled();
-});
+// reset button removed per request
 
 function updateSaveEnabled() {
   const participants = getParticipants();
@@ -435,16 +460,7 @@ $('#raceForm').addEventListener('submit', (e) => {
   renderGroups();
 });
 
-// ---------- Expected time input ----------
-$('#expectedTimeInput').addEventListener('input', () => {
-  if (!currentGroupId) return;
-  const sec = parseFloat($('#expectedTimeInput').value);
-  const ms = Number.isFinite(sec) && sec >= 0 ? Math.round(sec * 100) * 10 : null; // 0.01s単位で丸め（10ms）
-  state.groups[currentGroupId].expectedMs = ms;
-  saveData(state);
-  // Re-render to update probability
-  renderGroupDetail(currentGroupId);
-});
+// No manual expected time editing; auto-computed
 
 // ---------- Install prompt (optional) ----------
 let deferredPrompt = null;
