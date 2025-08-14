@@ -75,18 +75,13 @@
       <form method="dialog" id="raceForm" class="race-form">
         <header class="dialog-header">
           <h3>レース登録</h3>
-          <button type="button" id="closeRaceDialog" class="ghost">閉じる</button>
+          <button type="button" id="closeRaceDialog" class="icon-btn" aria-label="閉じる">&#x2715;</button>
         </header>
 
-        <div class="row">
-          <label class="stack">
-            <span>レース人数（1〜5）</span>
-            <input id="participantsInput" type="number" min="1" max="5" value="4" required />
-          </label>
-          <label class="stack">
-            <span>完走人数（0〜参加人数）</span>
-            <input id="finishersInput" type="number" min="0" max="5" value="0" required />
-          </label>
+        <div class="stack" style="flex:1">
+          <span>レース人数（1〜5）</span>
+          <input type="hidden" id="participantsInput" value="4" />
+          <div id="participantsBtns" class="btn-group" role="group" aria-label="レース人数"></div>
         </div>
 
         <div class="stopwatch">
@@ -97,6 +92,12 @@
             <button type="button" id="resetBtn" class="ghost" disabled>リセット</button>
           </div>
           <div class="meta" id="recordedInfo"></div>
+        </div>
+
+        <div class="stack" style="flex:1">
+          <span>完走人数（0〜参加人数）</span>
+          <input type="hidden" id="finishersInput" value="0" />
+          <div id="finishersBtns" class="btn-group" role="group" aria-label="完走人数"></div>
         </div>
 
         <footer class="dialog-footer">

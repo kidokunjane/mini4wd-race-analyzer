@@ -298,8 +298,8 @@ let capturedTime = null; // 1位タイム（ミリ秒）
 function openRaceDialog() {
   if (!currentGroupId) return alert('先にグループを選択してください');
   const dlg = $('#raceDialog');
-  $('#participantsInput').value = 4;
-  $('#finishersInput').value = 0;
+  renderParticipantsButtons(4);
+  renderFinishersButtons(4, 0);
   $('#timerDisplay').textContent = '00:00.0';
   $('#recordedInfo').textContent = '';
   $('#saveRaceBtn').disabled = true;
@@ -345,31 +345,72 @@ $('#resetBtn').addEventListener('click', () => {
 });
 
 function updateSaveEnabled() {
-  const participants = clampInt($('#participantsInput').value, 1, 5);
-  const finishers = clampInt($('#finishersInput').value, 0, participants);
+  const participants = getParticipants();
+  const finishers = getFinishers();
   const canSave = finishers === 0 || (finishers > 0 && capturedTime != null);
   $('#saveRaceBtn').disabled = !canSave;
 }
 
-function clampInt(v, min, max) {
-  const n = Math.max(min, Math.min(max, parseInt(v, 10) || min));
-  return n;
+function renderParticipantsButtons(selected) {
+  const cont = $('#participantsBtns');
+  const hidden = $('#participantsInput');
+  hidden.value = String(selected);
+  cont.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'choice-btn' + (i === selected ? ' active' : '');
+    btn.setAttribute('aria-pressed', String(i === selected));
+    btn.textContent = String(i);
+    btn.addEventListener('click', () => setParticipants(i));
+    cont.appendChild(btn);
+  }
 }
 
-$('#participantsInput').addEventListener('change', () => {
-  const participants = clampInt($('#participantsInput').value, 1, 5);
-  $('#participantsInput').value = participants;
-  const finishers = clampInt($('#finishersInput').value, 0, participants);
-  $('#finishersInput').value = finishers;
-  updateSaveEnabled();
-});
+function renderFinishersButtons(participants, selected) {
+  const cont = $('#finishersBtns');
+  const hidden = $('#finishersInput');
+  const clamped = Math.max(0, Math.min(participants, selected));
+  hidden.value = String(clamped);
+  cont.innerHTML = '';
+  for (let i = 0; i <= participants; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'choice-btn' + (i === clamped ? ' active' : '');
+    btn.setAttribute('aria-pressed', String(i === clamped));
+    btn.textContent = String(i);
+    btn.addEventListener('click', () => setFinishers(i));
+    cont.appendChild(btn);
+  }
+}
 
-$('#finishersInput').addEventListener('change', () => {
-  const participants = clampInt($('#participantsInput').value, 1, 5);
-  const finishers = clampInt($('#finishersInput').value, 0, participants);
-  $('#finishersInput').value = finishers;
+function getParticipants() { return clampInt($('#participantsInput').value, 1, 5); }
+function getFinishers() { return clampInt($('#finishersInput').value, 0, getParticipants()); }
+
+function setParticipants(n) {
+  const p = clampInt(n, 1, 5);
+  $('#participantsInput').value = String(p);
+  renderParticipantsButtons(p);
+  const f = Math.min(p, parseInt($('#finishersInput').value, 10) || 0);
+  renderFinishersButtons(p, f);
   updateSaveEnabled();
-});
+}
+
+function setFinishers(n) {
+  const p = getParticipants();
+  const f = Math.max(0, Math.min(p, parseInt(n, 10) || 0));
+  $('#finishersInput').value = String(f);
+  renderFinishersButtons(p, f);
+  updateSaveEnabled();
+}
+
+function clampInt(v, min, max) {
+  const parsed = parseInt(v, 10);
+  const num = Number.isFinite(parsed) ? parsed : min;
+  return Math.max(min, Math.min(max, num));
+}
+
+// No direct change listeners; selection handled by buttons
 
 $('#raceForm').addEventListener('submit', (e) => {
   e.preventDefault();
