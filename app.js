@@ -337,8 +337,11 @@ function openRaceDialog() {
   $('#saveRaceBtn').disabled = true;
 
   sw = new Stopwatch((ms) => $('#timerDisplay').textContent = formatTime(ms));
-  $('#startBtn').disabled = false;
-  $('#stopBtn').disabled = true;
+  const tbtn = $('#toggleBtn');
+  if (tbtn) {
+    tbtn.textContent = 'スタート';
+    tbtn.classList.add('primary');
+  }
   capturedTime = null;
 
   dlg.showModal();
@@ -349,22 +352,25 @@ $('#closeRaceDialog').addEventListener('click', () => {
   $('#raceDialog').close();
 });
 
-$('#startBtn').addEventListener('click', () => {
-  sw?.start();
-  $('#startBtn').disabled = true;
-  $('#stopBtn').disabled = false;
-  capturedTime = null;
-  $('#recordedInfo').textContent = '';
-  updateSaveEnabled();
-});
-
-$('#stopBtn').addEventListener('click', () => {
-  sw?.stop();
-  $('#startBtn').disabled = false;
-  $('#stopBtn').disabled = true;
-  capturedTime = sw ? quantize10(sw.elapsed) : null;
-  $('#recordedInfo').textContent = capturedTime != null ? `記録: ${formatTime(capturedTime)}` : '';
-  updateSaveEnabled();
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('#toggleBtn');
+  if (!btn) return;
+  if (!sw) return;
+  if (!sw.running) {
+    // Start timing
+    sw.start();
+    btn.textContent = 'ストップ';
+    capturedTime = null;
+    $('#recordedInfo').textContent = '';
+    updateSaveEnabled();
+  } else {
+    // Stop timing and capture
+    sw.stop();
+    btn.textContent = 'スタート';
+    capturedTime = sw ? quantize10(sw.elapsed) : null;
+    $('#recordedInfo').textContent = capturedTime != null ? `記録: ${formatTime(capturedTime)}` : '';
+    updateSaveEnabled();
+  }
 });
 
 // reset button removed per request

@@ -82,6 +82,7 @@ button:hover:not(:disabled) { transform: translateY(-1px); }
 button.ghost.danger { color: var(--danger); border-color: var(--danger); box-shadow: none; }
 
 .timer { font-variant-numeric: tabular-nums; font-size: 40px; font-weight: 700; text-align: center; margin: 8px 0 4px; }
+.stopwatch-btn { display: block; width: 100%; padding: 16px 20px; font-size: 18px; border-radius: 14px; min-height: 56px; }
 .finishes { margin: 8px 0 0; padding-left: 20px; max-height: 200px; overflow: auto; }
 .finishes li { padding: 4px 0; display: flex; justify-content: space-between; gap: 8px; }
 .finishes .time { font-variant-numeric: tabular-nums; font-weight: 600; }
